@@ -1,0 +1,108 @@
+import mysql.connector
+
+mydb = mysql.connector.connect(host="localhost", user="root", passwd="root", database="fbs")
+mycursor = mydb.cursor()
+
+
+# DO NOT CHANGE PLANE SIZE THE WHOLE CODE WILL BREAK
+# pre_book_percent = 32
+
+plane_size = 180
+covid_blocked_percentage = 0
+
+
+def get_col_counts():
+    return 6
+    # can be changed for variable plane size
+
+
+def get_row_counts():
+    c = get_col_counts()
+    r = int(plane_size / c)
+    if (r * c) < plane_size:
+        r = r + 1
+    return r
+
+
+rows = get_row_counts()
+cols = get_col_counts()
+
+
+def populate_seats(trip_id, covid_blocked_percentage):
+    mycursor.execute("SELECT * FROM seats where trip_id IS NOT NULL AND trip_id={}".format(trip_id))
+    if len(mycursor.fetchall()) > 0:
+        for i in range(0, 180):
+            mycursor.execute('''UPDATE seats 
+                                SET status = {}, passenger_id = ' '
+                                WHERE seat_number = '{}'
+                                '''.format(0, i + 1))
+            mydb.commit()
+    else:
+        for i in range(0, 180):
+            mycursor.execute('''INSERT INTO seats
+                                (seat_number, status, trip_id, passenger_id)
+                                VALUES 
+                                ({}, {}, {}, ' ')'''.format(i + 1, 0, trip_id))
+            mydb.commit()
+
+    global total_blocked_seats
+    # global total_pre_booked_seats
+    # can replace plane_size with 180
+    seats_to_block = int((1.0 * plane_size * covid_blocked_percentage) / 100)
+    # seats_to_pre_book = int(((plane_size - seats_to_block) * pre_book_percent * 1.0) / 100)
+    if seats_to_block >= 1:
+        block_every_nth = plane_size / seats_to_block
+    else:
+        block_every_nth = 0
+    # if seats_to_pre_book >= 1:
+    # pre_book_every_nth = plane_size / seats_to_pre_book
+    # else:
+    # pre_book_every_nth = 0
+    n = 1.0
+    # k = 1.0
+    total_blocked_seats = 0
+    # total_pre_booked_seats = 0
+    seat_count = 0
+    seat_number = -1
+    for i in range(rows):
+        for j in range(cols):
+            seat_number += 1
+            if seat_count < plane_size:
+                seat_count = seat_count + 1
+                if total_blocked_seats == 0 and seats_to_block > 0:
+                    n = block_every_nth
+                if n >= block_every_nth and total_blocked_seats <= seats_to_block:
+                    mycursor.execute('''UPDATE seats 
+                                           SET status = 1
+                                           where seat_number = {}'''.format(seat_number))
+                    mydb.commit()
+                    n = n - block_every_nth
+                    total_blocked_seats = total_blocked_seats + 1
+                # else:
+                # if total_pre_booked_seats == 0 and seats_to_pre_book > 0:
+                # k = pre_book_every_nth
+                # if k >= pre_book_every_nth and total_pre_booked_seats <= seats_to_pre_book:
+                #   plane_seat_details[seat_name] = "B"
+                #  k = k - pre_book_every_nth
+                # total_pre_booked_seats = total_pre_booked_seats + 1
+                else:
+                    pass
+                n = n + 1
+                # k = k + 1
+            else:
+                break
+
+
+def reset_bookings(trip_id):
+    mycursor.execute('''UPDATE seats
+                        SET status = 0, passenger_id=""
+                        where trip_id = {}'''.format(trip_id))
+    mydb.commit()
+    mycursor.execute('''UPDATE trip
+                        SET seats_left = 180
+                        Where trip_id = {}'''.format(trip_id))
+    mydb.commit()
+
+
+reset_bookings(2)
+populate_seats(2, covid_blocked_percentage)
