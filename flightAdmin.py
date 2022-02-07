@@ -8,7 +8,8 @@ mycursor = mydb.cursor()
 # pre_book_percent = 32
 
 plane_size = 180
-covid_blocked_percentage = 0
+covid_blocked_percentage = 80
+# works best for 45% + blocked
 
 
 def get_col_counts():
@@ -29,20 +30,25 @@ cols = get_col_counts()
 
 
 def populate_seats(trip_id, covid_blocked_percentage):
-    mycursor.execute("SELECT * FROM seats where trip_id IS NOT NULL AND trip_id={}".format(trip_id))
+    mycursor.execute('''SELECT * 
+                        FROM seats 
+                        WHERE trip_id IS NOT NULL 
+                        AND trip_id={}'''.format(trip_id))
+
     if len(mycursor.fetchall()) > 0:
         for i in range(0, 180):
             mycursor.execute('''UPDATE seats 
-                                SET status = {}, passenger_id = ' '
+                                SET status = {}, passenger_id = ''
                                 WHERE seat_number = '{}'
-                                '''.format(0, i + 1))
+                                AND trip_id = {}
+                                '''.format(0, i + 1, trip_id))
             mydb.commit()
     else:
         for i in range(0, 180):
             mycursor.execute('''INSERT INTO seats
                                 (seat_number, status, trip_id, passenger_id)
                                 VALUES 
-                                ({}, {}, {}, ' ')'''.format(i + 1, 0, trip_id))
+                                ({}, {}, {}, '')'''.format(i + 1, 0, trip_id))
             mydb.commit()
 
     global total_blocked_seats
@@ -74,7 +80,8 @@ def populate_seats(trip_id, covid_blocked_percentage):
                 if n >= block_every_nth and total_blocked_seats <= seats_to_block:
                     mycursor.execute('''UPDATE seats 
                                            SET status = 1
-                                           where seat_number = {}'''.format(seat_number))
+                                           WHERE seat_number = {}
+                                           AND trip_id = {}'''.format(seat_number, trip_id))
                     mydb.commit()
                     n = n - block_every_nth
                     total_blocked_seats = total_blocked_seats + 1
@@ -92,6 +99,12 @@ def populate_seats(trip_id, covid_blocked_percentage):
             else:
                 break
 
+    mycursor.execute('''UPDATE trip
+                        SET seats_left = seats_left - {}
+                        where trip_id = {}'''
+                     .format(total_blocked_seats, trip_id))
+    mydb.commit()
+
 
 def reset_bookings(trip_id):
     mycursor.execute('''UPDATE seats
@@ -104,5 +117,5 @@ def reset_bookings(trip_id):
     mydb.commit()
 
 
-reset_bookings(2)
-populate_seats(2, covid_blocked_percentage)
+# reset_bookings(3)
+# populate_seats(3, covid_blocked_percentage)
