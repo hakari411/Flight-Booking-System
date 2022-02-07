@@ -48,9 +48,11 @@ def book_seats(seat_number):
         unselect_seat(seat_number)
 
 
-def confirm_booking(passenger_array):
+def confirm_booking(passenger_array, trip_id):
+    i = 0
     for key in booked_seats:
-        i = 0
+        print(i)
+        print(passenger_array[i])
         mycursor.execute('''UPDATE seats
                             SET status = {},passenger_id = "{}"
                             WHERE seat_number = {}'''
@@ -58,11 +60,17 @@ def confirm_booking(passenger_array):
         mydb.commit()
         i += 1
 
+    mycursor.execute('''UPDATE trip
+                        SET seats_left = seats_left - {}
+                        where trip_id = {}'''
+                     .format(active_buttons, trip_id))
+    mydb.commit()
 
-def confirm_travellers(arr1, arr2):
-    for i in range(0, len(arr1)):
-        passenger_name = arr1[i].get("1.0", "end").strip()
-        arr2.append(passenger_name)
+
+def confirm_travellers(passenger_box_array, passenger_array):
+    for i in range(0, len(passenger_box_array)):
+        passenger_name = passenger_box_array[i].get("1.0", "end").strip()
+        passenger_array.append(passenger_name)
 
 
 def place_labels(seats_window):
@@ -159,14 +167,15 @@ def page2(trip_det):
     place_labels(seats_window)
     pull_seats(seats_window, trip_det)
 
-    passenger_array = []
+    route_id = get_route_id(trip_det[1], trip_det[2])
+    trip_id = get_trip_id(trip_det[0], route_id, trip_det[3])
 
+    passenger_array = []
+    passenger_box_array = []
     c = int(size_box.get("1.0").strip())
     temp = ""
-
-    passenger_box_array = []
     for i in range(0, c):
-        Label(seats_window, text="Passenger {}'s Name:".format(i + 1), bg="#dfe8e9",
+        Label(seats_window, text="Passenger {}'s Full Name:".format(i + 1), bg="#dfe8e9",
               font=("Times New Roman", 13)).place(x=730, y=10 + i * 90)
         name = Text(seats_window, height=2, width=23)
         passenger_box_array.append(name)
@@ -179,7 +188,7 @@ def page2(trip_det):
 
     Button(seats_window, text="Confirm Booking", bg="#545454", fg="#f6f6ef", pady="3", padx="9",
            font=("Times New Roman", 13),
-           command=lambda: confirm_booking(passenger_array)).place(x=750, y=890)
+           command=lambda: confirm_booking(passenger_array, trip_id)).place(x=750, y=890)
 
 
 def call_trip(trip_det):
