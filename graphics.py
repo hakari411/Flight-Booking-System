@@ -19,6 +19,21 @@ active_buttons = 0
 
 
 # defining functions
+def final_page():
+    thanks_window = Toplevel(root)
+    thanks_window.geometry("500x500")
+    thanks_window.title("Seat Selection Window")
+    thanks_window.configure(bg="#dfe8e9")
+    thanks_window.resizable(width=False, height=False)
+
+    Label(thanks_window, text="Thank you for choosing Flyter!", bg="#dfe8e9", font=("Times New Roman", 13)).pack()
+    Label(thanks_window, text="All confirmatory details will be sent to the provided email", bg="#dfe8e9", font=("Times New Roman", 13)).pack()
+    Label(thanks_window, text="We hope to see you again!", bg="#dfe8e9", font=("Times New Roman", 13)).pack()
+
+    Button(thanks_window, text="End", bg="#545454", fg="#f6f6ef", pady="3", padx="4", font=("Times New Roman", 13),
+           command=root.destroy).pack()
+
+
 def select_seat(seat_number):
     global active_buttons
     if button_list[seat_number].cget("bg") == "#f2efe6":
@@ -51,8 +66,8 @@ def book_seats(seat_number):
 def confirm_booking(passenger_array, trip_id):
     i = 0
     for key in booked_seats:
-        print(i)
-        print(passenger_array[i])
+        # print(i)
+        # print(passenger_array[i])
         mycursor.execute('''UPDATE seats
                             SET status = {},passenger_id = "{}"
                             WHERE seat_number = {}'''
@@ -65,6 +80,8 @@ def confirm_booking(passenger_array, trip_id):
                         where trip_id = {}'''
                      .format(active_buttons, trip_id))
     mydb.commit()
+
+    final_page()
 
 
 def confirm_travellers(passenger_box_array, passenger_array):
@@ -85,9 +102,8 @@ def place_labels(seats_window):
     for i in range(0, 30):
         row_number = i + 1
         y_coord = row_number * 30
-        Label(seats_window, text="{}".format(row_number), bg="#dfe8e9", font=("Times New Roman", 13)).place(x=10,
-                                                                                                            y="{}".format(
-                                                                                                                y_coord))
+        Label(seats_window, text="{}".format(row_number), bg="#dfe8e9", font=("Times New Roman", 13))\
+            .place(x=10, y="{}".format(y_coord))
 
 
 def pull_seats(seats_window, trip_det):
@@ -113,7 +129,7 @@ def pull_seats(seats_window, trip_det):
                 b = ((i + 1) * 30)
                 if status == 0:
                     x = i * 6 + j + 1
-                    button = Button(seats_window, text=x, activebackground="black",
+                    button = Button(seats_window, text=x, activebackground="#c7ffd8",
                                     activeforeground="#c7ffd8",
                                     bd=2, bg="#f2efe6", fg="#f2efe6", relief=RIDGE,
                                     height=1, width=3, command=lambda bound_x=x: book_seats(bound_x))
@@ -383,5 +399,6 @@ def page1():
            command=lambda: proceed()).place(x=1050, y=850)
 
 
+# main
 page1()
 root.mainloop()
