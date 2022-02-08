@@ -8,7 +8,7 @@ mycursor = mydb.cursor()
 # pre_book_percent = 32
 
 plane_size = 180
-covid_blocked_percentage = 80
+covid_blocked_percentage = 45
 # works best for 45% + blocked
 
 
@@ -117,5 +117,5 @@ def reset_bookings(trip_id):
     mydb.commit()
 
 
-# reset_bookings(3)
-# populate_seats(3, covid_blocked_percentage)
+reset_bookings(1)
+populate_seats(1, covid_blocked_percentage)
