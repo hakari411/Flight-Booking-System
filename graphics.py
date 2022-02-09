@@ -303,7 +303,15 @@ def establish(arr, c):
                      Please try changing your input parameters.'''
     count = 0
     for val in arr:
-        menu_listbox.insert(END, val)
+        val_1 = val.copy()
+# [1, 2, 3, 4, 5, 6]
+        val_1.insert(1, (30 - len(str(val[0])))*" ")
+# [1, , 2, 3, 4, 5, 6]
+        val_1.insert(3, (33 - len(str(val[1])))*' ')
+        val_1.insert(5, (19 - len(str(val[2])))*' ')
+        val_1.insert(7, (21 - len(str(val[3])))*' ')
+        val_1.insert(9, (18 - len(str(val[4])))*' ')
+        menu_listbox.insert(END, val_1)
         count += 1
 
     if count == 0:
