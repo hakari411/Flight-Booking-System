@@ -2,6 +2,8 @@
 from tkinter import *
 from PIL import ImageTk, Image
 import mysql.connector
+import random
+from datetime import datetime
 
 # setting up connection
 mydb = mysql.connector.connect(host="localhost", user="root", passwd="root", database="fbs")
@@ -26,8 +28,16 @@ def final_page():
     thanks_window.configure(bg="#dfe8e9")
     thanks_window.resizable(width=False, height=False)
 
+    mycursor.execute('''SELECT *
+                        FROM seats
+                        WHERE passenger_id = {}'''
+                     .format(pass_id))
+    x = len(mycursor.fetchall())
+
+    date = dpt_date_box.get("1.0", "end")
+
     Label(thanks_window, text="Thank you for choosing Flyter!", bg="#dfe8e9", font=("Times New Roman", 13)).pack()
-    Label(thanks_window, text="All confirmatory details will be sent to the provided email", bg="#dfe8e9", font=("Times New Roman", 13)).pack()
+    Label(thanks_window, text="{} seat(s) have been booked for date : {}".format(x, date), bg="#dfe8e9", font=("Times New Roman", 13)).pack()
     Label(thanks_window, text="We hope to see you again!", bg="#dfe8e9", font=("Times New Roman", 13)).pack()
 
     Button(thanks_window, text="End", bg="#545454", fg="#f6f6ef", pady="3", padx="4", font=("Times New Roman", 13),
@@ -64,24 +74,30 @@ def book_seats(seat_number):
 
 
 def confirm_booking(passenger_array, trip_id):
-    i = 0
-    for key in booked_seats:
-        # print(i)
-        # print(passenger_array[i])
-        mycursor.execute('''UPDATE seats
-                            SET status = {},passenger_id = "{}"
-                            WHERE seat_number = {}'''
-                         .format(2, passenger_array[i], key))
+    global pass_id
+    if active_buttons == int(size_box.get("1.0", "end")):
+        pass_id = random.randint(0, 99999999)
+        i = 0
+        for key in booked_seats:
+            # print(i)
+            # print(passenger_array[i])
+            mycursor.execute('''UPDATE seats
+                                SET status = {},passenger_name = "{}", passenger_id = {}
+                                WHERE seat_number = {} 
+                                AND trip_id = {}'''
+                             .format(2, passenger_array[i], pass_id, key, trip_id))
+            mydb.commit()
+            i += 1
+
+        mycursor.execute('''UPDATE trip
+                            SET seats_left = seats_left - {}
+                            where trip_id = {}'''
+                         .format(active_buttons, trip_id))
         mydb.commit()
-        i += 1
 
-    mycursor.execute('''UPDATE trip
-                        SET seats_left = seats_left - {}
-                        where trip_id = {}'''
-                     .format(active_buttons, trip_id))
-    mydb.commit()
-
-    final_page()
+        final_page()
+    else:
+        pass
 
 
 def confirm_travellers(passenger_box_array, passenger_array):
@@ -310,11 +326,11 @@ def establish(arr, c):
         menu_listbox.insert(END, defaultText)
 
 
-def search(lvng, dst, dpt_date, size):
+def search(lvng, dst, dpt_date):
     possible_flights = []
     a = lvng.get("1.0", "end").lower()
     b = dst.get("1.0", "end").lower()
-    c = dpt_date.get("1.0", "end").lower()
+    c = datetime.strptime(dpt_date.get("1.0", "end").strip(), '%Y-%m-%d')
     d = int(size_box.get("1.0").strip())
     route_id = 0
 
@@ -332,7 +348,8 @@ def search(lvng, dst, dpt_date, size):
                         JOIN trip ON trip.route_id = route.route_id
                         WHERE trip.seats_left > {}
                         AND trip.route_id = {}
-                '''.format(d, route_id))
+                        AND trip.trip_date = "{}"
+                '''.format(d, route_id, c))
 
     for x in mycursor.fetchall():
         x = list(x)
@@ -383,7 +400,7 @@ def page1():
     size_box.place(x=793, y=452)
 
     Button(text="Search", bg="#545454", fg="#f6f6ef", pady="3", padx="4", font=("Times New Roman", 13),
-           command=lambda: search(lvng_from_box, dst_box, dpt_date_box, size_box)).place(x=1050, y=452)
+           command=lambda: search(lvng_from_box, dst_box, dpt_date_box)).place(x=1050, y=452)
 
     # clicked = StringVar()
     # sort_menu = OptionMenu(root, clicked, "Earliest", "Cheapest", "Quickest", "Most Seats Left")
