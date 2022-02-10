@@ -305,7 +305,7 @@ def swap(l, dst):
     menu_listbox.delete(0, "end")
 
 
-def establish(arr, c):
+def establish(arr):
     # need to use c in the thing displayed in listbox
     flight_info_header = Label(
         text="Flight ID\t\t Departure City\t\t Arrival City\t Departure Date\t Departure Time\t Arrival Time",
@@ -357,7 +357,7 @@ def search(lvng, dst, dpt_date):
 
     menu_listbox.delete(0, "end")
 
-    establish(possible_flights, c)
+    establish(possible_flights)
 
 
 def page1():
