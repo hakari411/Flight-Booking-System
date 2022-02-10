@@ -123,9 +123,9 @@ def place_labels(seats_window):
 
 
 def pull_seats(seats_window, trip_det):
-    route_id = get_route_id(trip_det[1], trip_det[2])
+    route_id = get_route_id(trip_det[2], trip_det[4])
     # print(route_id)
-    trip_id = get_trip_id(trip_det[0], route_id, trip_det[3])
+    trip_id = get_trip_id(trip_det[0], route_id, trip_det[6])
     # print(trip_id)
 
     seat_number = 1
@@ -199,8 +199,8 @@ def page2(trip_det):
     place_labels(seats_window)
     pull_seats(seats_window, trip_det)
 
-    route_id = get_route_id(trip_det[1], trip_det[2])
-    trip_id = get_trip_id(trip_det[0], route_id, trip_det[3])
+    route_id = get_route_id(trip_det[2], trip_det[4])
+    trip_id = get_trip_id(trip_det[0], route_id, trip_det[6])
 
     passenger_array = []
     passenger_box_array = []
@@ -257,7 +257,7 @@ def get_trip_id(p_id, r_id, date):
 def check_trip(trip_details):
     trip_det = trip_details
     a = trip_details[0]
-    b = get_route_id(trip_details[1], trip_details[2])
+    b = get_route_id(trip_details[2], trip_details[4])
     c = dpt_date_box.get("1.0", "end").strip()
     if len(c) == 0:
         c = ""
@@ -321,12 +321,12 @@ def establish(arr):
     for val in arr:
         val_1 = val.copy()
 # [1, 2, 3, 4, 5, 6]
-        val_1.insert(1, (30 - len(str(val[0])))*" ")
+        val_1.insert(1, str((45 - len(str(val[0])))*" "))
 # [1, , 2, 3, 4, 5, 6]
-        val_1.insert(3, (33 - len(str(val[1])))*' ')
-        val_1.insert(5, (19 - len(str(val[2])))*' ')
-        val_1.insert(7, (21 - len(str(val[3])))*' ')
-        val_1.insert(9, (18 - len(str(val[4])))*' ')
+        val_1.insert(3, (60 - len(str(val[1])))*' ')
+        val_1.insert(5, (34 - len(str(val[2])))*' ')
+        val_1.insert(7, (36 - len(str(val[3])))*' ')
+        val_1.insert(9, (40 - len(str(val[4])))*' ')
         menu_listbox.insert(END, val_1)
         count += 1
 
