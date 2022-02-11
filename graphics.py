@@ -1,5 +1,6 @@
 # imports required
 from tkinter import *
+from tkinter import messagebox
 from PIL import ImageTk, Image
 import mysql.connector
 import random
@@ -22,6 +23,13 @@ active_buttons = 0
 
 
 # defining functions
+def new_trip():
+    # update the plane table when flight is full or when date is over
+    # by changing current location and then creating a new trip for the next day
+    # which has the location and departure point reversed and date as next date
+    pass
+
+
 def final_page():
     thanks_window = Toplevel(root)
     thanks_window.geometry("500x500")
@@ -68,7 +76,7 @@ def unselect_seat(seat_number):
 
 
 def book_seats(seat_number):
-    c = int(size_box.get("1.0", "end"))
+    c = int(size.get())
     if select_seat(seat_number) != 1:
         unselect_seat(seat_number)
     if active_buttons > c:
@@ -77,7 +85,7 @@ def book_seats(seat_number):
 
 def confirm_booking(passenger_array, trip_id):
     global pass_id
-    if active_buttons == int(size_box.get("1.0", "end")):
+    if active_buttons == int(size.get()):
         pass_id = random.randint(0, 99999999)
         i = 0
         for key in booked_seats:
@@ -96,6 +104,8 @@ def confirm_booking(passenger_array, trip_id):
                             where trip_id = {}'''
                          .format(active_buttons, trip_id))
         mydb.commit()
+
+        new_trip()
 
         final_page()
     else:
@@ -171,7 +181,7 @@ def pull_seats(seats_window, trip_det):
                 b = ((i + 1) * 30)
                 if status == 0:
                     x = i * 6 + j + 1
-                    button = Button(seats_window, text=x, activebackground="black",
+                    button = Button(seats_window, text=x, activebackground="#c7ffd8",
                                     activeforeground="#c7ffd8",
                                     bd=2, bg="#f2efe6", fg="#f2efe6", relief=RIDGE,
                                     height=1, width=3, command=lambda bound_x=x: book_seats(bound_x))
@@ -206,7 +216,7 @@ def page2(trip_det):
 
     passenger_array = []
     passenger_box_array = []
-    c = int(size_box.get("1.0").strip())
+    c = int(size.get())
     temp = ""
     for i in range(0, c):
         Label(seats_window, text="Passenger {}'s Full Name:".format(i + 1), bg="#dfe8e9",
@@ -261,12 +271,6 @@ def check_trip(trip_details):
     a = trip_details[0]
     b = get_route_id(trip_details[2], trip_details[4])
     c = cal.get_date()
-    # if len(c) == 0:
-    #     c = ""
-    # else:
-    #     c = datetime.strptime(cal.get_date().strip(), '%Y-%m-%d')
-
-    # print(">{}<".format(c))
 
     query1 = '''SELECT *
                 FROM trip
@@ -291,20 +295,22 @@ def proceed():
     if selected:
         selected_trip = menu_listbox.get(selected)
         check_trip(selected_trip)
+    else :
+        messagebox.showerror("ERROR: Nothing Selected", "No flight has been chosen. To continue please select the "
+                                                        "same from the displayed options")
     # add an else clause to put up error boxes for multiple selections
 
 
-def swap(l, dst):
-    a = l.get("1.0", "end").lower().strip()
-    b = dst.get("1.0", "end").lower().strip()
+def swap(loc, dst):
+    a = loc.get()
+    b = dst.get()
 
-    lvng_from_box.delete('1.0', "end")
-    lvng_from_box.insert("1.0", b)
-
-    dst_box.delete('1.0', "end")
-    dst_box.insert("1.0", a)
+    dst.set(a)
+    loc.set(b)
 
     menu_listbox.delete(0, "end")
+
+    search(loc, dst, cal, size)
 
 
 def establish(arr):
@@ -337,50 +343,72 @@ def establish(arr):
         menu_listbox.insert(END, defaultText)
 
 
-def search(lvng, dst, cal):
+def no_errors(a, b, d):
+    if a == b:
+        messagebox.showerror("ERROR : Location = Destination",
+                             "The departure and arrival cities selected are the same. Please select different cities "
+                             "to continue")
+        return False
+
+    elif a == "Departure City" or b == "Arrival City":
+        messagebox.showerror("ERROR : Location and/or Destination not selected",
+                             "The departure and/or arrival cities are not selected. Please select both cities "
+                             "to continue")
+        return False
+
+    elif d == "Number of Tickets":
+        messagebox.showerror("ERROR : Number of Tickets not selected",
+                             "The number of tickets required has not been selected. Please select the same "
+                             "to continue")
+
+    elif a != "Departure City" and b != "Arrival City" and a != b and d != "Number of Tickets":
+        return True
+
+
+def search(loc, dst, cl, s):
     possible_flights = []
-    a = lvng.get("1.0", "end").lower()
-    b = dst.get("1.0", "end").lower()
-    c = cal.get_date()
-    d = int(size_box.get("1.0").strip())
+    a = loc.get()
+    b = dst.get()
+    c = cl.get_date()
+    d = s.get()
+
+    truth_val = no_errors(a, b, d)
     route_id = 0
 
-    mycursor.execute(''' SELECT route_id 
-                         FROM route 
-                         WHERE dpt_city = '{}' 
-                         AND arr_city = '{}' 
-                         '''.format(a.strip(), b.strip()))
-    for x in mycursor.fetchone():
-        route_id = x
+    if truth_val == True:
+        mycursor.execute(''' SELECT route_id 
+                             FROM route 
+                             WHERE dpt_city = '{}' 
+                             AND arr_city = '{}' 
+                             '''.format(a.strip(), b.strip()))
+        for x in mycursor.fetchone():
+            route_id = x
 
-    mycursor.execute('''SELECT trip.plane_id, route.dpt_city, route.arr_city,
-                        DATE(trip.trip_date), route.dpt_time, route.arr_time
-                        FROM route
-                        JOIN trip ON trip.route_id = route.route_id
-                        WHERE trip.seats_left > {}
-                        AND trip.route_id = {}
-                        AND trip.trip_date = "{}"
-                '''.format(d, route_id, c))
+        mycursor.execute('''SELECT trip.plane_id, route.dpt_city, route.arr_city,
+                            DATE(trip.trip_date), route.dpt_time, route.arr_time
+                            FROM route
+                            JOIN trip ON trip.route_id = route.route_id
+                            WHERE trip.seats_left > {}
+                            AND trip.route_id = {}
+                            AND trip.trip_date = "{}"
+                    '''.format(int(d), route_id, c))
 
-    for x in mycursor.fetchall():
-        x = list(x)
-        possible_flights.append(x)
+        for x in mycursor.fetchall():
+            x = list(x)
+            possible_flights.append(x)
 
-    menu_listbox.delete(0, "end")
+        menu_listbox.delete(0, "end")
 
-    establish(possible_flights)
+        establish(possible_flights)
+    # else:
+    #   messagebox.showwarning("WARNING", "An unknown error has occurred. Please try again")
 
 
 def page1():
     global swap_photo
     global banner
-
-    """standard global requirement for the next 4"""
-
-    global lvng_from_box
-    global dst_box
     global cal
-    global size_box
+    global size
 
     root.geometry("1200x900")
     root.resizable(width=False, height=False)
@@ -390,21 +418,20 @@ def page1():
     Label(image=banner).place(x=0, y=0)
 
     Label(text="Leaving From", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=47, y=422)
-    lvng_from_box = Text(root, height=2, width=23)
-    lvng_from_box.place(x=47, y=452)
-
-    lvng_from_box.insert("1.0", "kolkata")
-
-    swap_photo = PhotoImage(file=r"C:\Users\Dell\PythonProj\FlightSystem\images\finalSwap.png")
-    swap_button = Button(root, bg="white", image=swap_photo, height=25, width=30,
-                         command=lambda: swap(lvng_from_box, dst_box))
-    swap_button.place(x=260, y=456)
+    location = StringVar(root)
+    location.set("Departure City")
+    lt = OptionMenu(root, location, "kolkata", "bengaluru", "chennai", "mumbai")
+    lt.place(x=47, y=452)
+    lt.config(pady="3", padx="4", font=("Times New Roman", 13))
+    lt["menu"].config(font=("Times New Roman", 13))
 
     Label(text="Destination", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=327, y=422)
-    dst_box = Text(root, height=2, width=23)
-    dst_box.place(x=327, y=452)
-
-    dst_box.insert("1.0", "bengaluru")
+    destination = StringVar(root)
+    destination.set("Arrival City")
+    dt = OptionMenu(root, destination, "kolkata", "bengaluru", "chennai", "mumbai")
+    dt.place(x=327, y=452)
+    dt.config(pady="3", padx="4", font=("Times New Roman", 13))
+    dt["menu"].config(font=("Times New Roman", 13))
 
     Label(text="Departure Date", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=560, y=422)
     cal = DateEntry(root, selectmode="day", year=2022, month=4, day=1, font=("Times New Roman", 13),
@@ -412,13 +439,12 @@ def page1():
     cal.place(x=560, y=452)
 
     Label(text="No. Of Tickets", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=793, y=422)
-    size_box = Text(root, height=2, width=23)
-    size_box.place(x=793, y=452)
-
-    size_box.insert("1.0", 1)
-
-    Button(text="Search", bg="#545454", fg="#f6f6ef", pady="3", padx="4", font=("Times New Roman", 13),
-           command=lambda: search(lvng_from_box, dst_box, cal)).place(x=1050, y=452)
+    size = StringVar(root)
+    st = OptionMenu(root, size, "1", "2", "3", "4", "5", "6", "7", "8", "9")
+    size.set("Number of Tickets")
+    st.place(x=793, y=452)
+    st.config(pady="3", padx="4", font=("Times New Roman", 13))
+    st["menu"].config(font=("Times New Roman", 12))
 
     # clicked = StringVar()
     # sort_menu = OptionMenu(root, clicked, "Earliest", "Cheapest", "Quickest", "Most Seats Left")
@@ -426,6 +452,14 @@ def page1():
     # sort_menu["menu"].config(bg="#545454", fg="#f6f6ef", font=("Times New Roman", 12))
     # clicked.set("Sort By")
     # sort_menu.place(x=1040, y=540)
+
+    swap_photo = PhotoImage(file=r"C:\Users\Dell\PythonProj\FlightSystem\images\finalSwap.png")
+    swap_button = Button(root, image=swap_photo, height=25, width=30,
+                         command=lambda: swap(location, destination))
+    swap_button.place(x=245, y=452)
+
+    Button(text="Search", bg="#545454", fg="#f6f6ef", pady="3", padx="4", font=("Times New Roman", 13),
+           command=lambda: search(location, destination, cal, size)).place(x=1050, y=452)
 
     Button(text="Exit", bg="#545454", fg="#f6f6ef", pady="3", padx="4", font=("Times New Roman", 13),
            command=quit).place(x=47, y=850)
