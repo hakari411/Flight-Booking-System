@@ -3,7 +3,8 @@ from tkinter import *
 from PIL import ImageTk, Image
 import mysql.connector
 import random
-from datetime import datetime
+from datetime import datetime, date
+from tkcalendar import *
 
 # setting up connection
 mydb = mysql.connector.connect(host="localhost", user="root", passwd="root", database="fbs")
@@ -14,7 +15,7 @@ root = Tk()
 root.title("Flyter - 12th Board Project")
 
 # defining the needed globals
-menu_listbox = Listbox(root, width=155, height=15)
+menu_listbox = Listbox(root, width=103, height=12, font=("Times New Roman", 13))
 button_list = {}
 booked_seats = {}
 active_buttons = 0
@@ -34,10 +35,11 @@ def final_page():
                      .format(pass_id))
     x = len(mycursor.fetchall())
 
-    date = dpt_date_box.get("1.0", "end")
+    date = cal.get_date()
 
     Label(thanks_window, text="Thank you for choosing Flyter!", bg="#dfe8e9", font=("Times New Roman", 13)).pack()
-    Label(thanks_window, text="{} seat(s) have been booked for date : {}".format(x, date), bg="#dfe8e9", font=("Times New Roman", 13)).pack()
+    Label(thanks_window, text="{} seat(s) have been booked for date : {}".format(x, date), bg="#dfe8e9",
+          font=("Times New Roman", 13)).pack()
     Label(thanks_window, text="We hope to see you again!", bg="#dfe8e9", font=("Times New Roman", 13)).pack()
 
     Button(thanks_window, text="End", bg="#545454", fg="#f6f6ef", pady="3", padx="4", font=("Times New Roman", 13),
@@ -118,7 +120,7 @@ def place_labels(seats_window):
     for i in range(0, 30):
         row_number = i + 1
         y_coord = row_number * 30
-        Label(seats_window, text="{}".format(row_number), bg="#dfe8e9", font=("Times New Roman", 13))\
+        Label(seats_window, text="{}".format(row_number), bg="#dfe8e9", font=("Times New Roman", 13)) \
             .place(x=10, y="{}".format(y_coord))
 
 
@@ -258,11 +260,11 @@ def check_trip(trip_details):
     trip_det = trip_details
     a = trip_details[0]
     b = get_route_id(trip_details[2], trip_details[4])
-    c = dpt_date_box.get("1.0", "end").strip()
-    if len(c) == 0:
-        c = ""
-    else:
-        c = dpt_date_box.get("1.0", "end")
+    c = cal.get_date()
+    # if len(c) == 0:
+    #     c = ""
+    # else:
+    #     c = datetime.strptime(cal.get_date().strip(), '%Y-%m-%d')
 
     # print(">{}<".format(c))
 
@@ -270,7 +272,7 @@ def check_trip(trip_details):
                 FROM trip
                 where (plane_id IS NOT NULL AND plane_id = {})
                 AND (route_id IS NOT NULL AND route_id = {})
-                AND (trip_date IS NOT NULL AND trip_date = "{}" ) '''.format(a, b, c.strip())
+                AND (trip_date IS NOT NULL AND trip_date = "{}" ) '''.format(a, b, c)
 
     # print(query1)
 
@@ -306,12 +308,13 @@ def swap(l, dst):
 
 
 def establish(arr):
-    # need to use c in the thing displayed in listbox
-    flight_info_header = Label(
-        text="Flight ID\t\t Departure City\t\t Arrival City\t Departure Date\t Departure Time\t Arrival Time",
-        bg="#dfe8e9", font=("Times New Roman", 13))
+    Label(text="Flight Number", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=47, y=535)
+    Label(text="Departure City", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=207, y=535)
+    Label(text="Arrival City", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=357, y=535)
+    Label(text="Departure Date", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=550, y=535)
+    Label(text="Departure Time", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=745, y=535)
+    Label(text="Arrival Time", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=885, y=535)
 
-    flight_info_header.place(x=47, y=540)
     menu_listbox.place(x=47, y=580)
 
     defaultText = '''No flights are available that match your parameters.
@@ -320,13 +323,13 @@ def establish(arr):
     count = 0
     for val in arr:
         val_1 = val.copy()
-# [1, 2, 3, 4, 5, 6]
-        val_1.insert(1, str((45 - len(str(val[0])))*" "))
-# [1, , 2, 3, 4, 5, 6]
-        val_1.insert(3, (60 - len(str(val[1])))*' ')
-        val_1.insert(5, (34 - len(str(val[2])))*' ')
-        val_1.insert(7, (36 - len(str(val[3])))*' ')
-        val_1.insert(9, (40 - len(str(val[4])))*' ')
+        # [1, 2, 3, 4, 5, 6]
+        val_1.insert(1, str((32 - len(str(val[0]))) * " "))
+        # [1, , 2, 3, 4, 5, 6]
+        val_1.insert(3, (26 - len(str(val[1]))) * ' ')
+        val_1.insert(5, (35 - len(str(val[2]))) * ' ')
+        val_1.insert(7, (32 - len(str(val[3]))) * ' ')
+        val_1.insert(9, (25 - len(str(val[4]))) * ' ')
         menu_listbox.insert(END, val_1)
         count += 1
 
@@ -334,11 +337,11 @@ def establish(arr):
         menu_listbox.insert(END, defaultText)
 
 
-def search(lvng, dst, dpt_date):
+def search(lvng, dst, cal):
     possible_flights = []
     a = lvng.get("1.0", "end").lower()
     b = dst.get("1.0", "end").lower()
-    c = datetime.strptime(dpt_date.get("1.0", "end").strip(), '%Y-%m-%d')
+    c = cal.get_date()
     d = int(size_box.get("1.0").strip())
     route_id = 0
 
@@ -376,7 +379,7 @@ def page1():
 
     global lvng_from_box
     global dst_box
-    global dpt_date_box
+    global cal
     global size_box
 
     root.geometry("1200x900")
@@ -390,6 +393,8 @@ def page1():
     lvng_from_box = Text(root, height=2, width=23)
     lvng_from_box.place(x=47, y=452)
 
+    lvng_from_box.insert("1.0", "kolkata")
+
     swap_photo = PhotoImage(file=r"C:\Users\Dell\PythonProj\FlightSystem\images\finalSwap.png")
     swap_button = Button(root, bg="white", image=swap_photo, height=25, width=30,
                          command=lambda: swap(lvng_from_box, dst_box))
@@ -399,16 +404,21 @@ def page1():
     dst_box = Text(root, height=2, width=23)
     dst_box.place(x=327, y=452)
 
+    dst_box.insert("1.0", "bengaluru")
+
     Label(text="Departure Date", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=560, y=422)
-    dpt_date_box = Text(root, height=2, width=23)
-    dpt_date_box.place(x=560, y=452)
+    cal = DateEntry(root, selectmode="day", year=2022, month=4, day=1, font=("Times New Roman", 13),
+                    mindate=date.today(), date_pattern="yyyy-mm-dd", height=3, width=18)
+    cal.place(x=560, y=452)
 
     Label(text="No. Of Tickets", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=793, y=422)
     size_box = Text(root, height=2, width=23)
     size_box.place(x=793, y=452)
 
+    size_box.insert("1.0", 1)
+
     Button(text="Search", bg="#545454", fg="#f6f6ef", pady="3", padx="4", font=("Times New Roman", 13),
-           command=lambda: search(lvng_from_box, dst_box, dpt_date_box)).place(x=1050, y=452)
+           command=lambda: search(lvng_from_box, dst_box, cal)).place(x=1050, y=452)
 
     # clicked = StringVar()
     # sort_menu = OptionMenu(root, clicked, "Earliest", "Cheapest", "Quickest", "Most Seats Left")
