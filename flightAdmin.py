@@ -38,7 +38,7 @@ def populate_seats(trip_id, covid_blocked_percentage):
     if len(mycursor.fetchall()) > 0:
         for i in range(0, 180):
             mycursor.execute('''UPDATE seats 
-                                SET status = {}, passenger_id = ''
+                                SET status = {}, passenger_name = ''
                                 WHERE seat_number = '{}'
                                 AND trip_id = {}
                                 '''.format(0, i + 1, trip_id))
@@ -46,7 +46,7 @@ def populate_seats(trip_id, covid_blocked_percentage):
     else:
         for i in range(0, 180):
             mycursor.execute('''INSERT INTO seats
-                                (seat_number, status, trip_id, passenger_id)
+                                (seat_number, status, trip_id, passenger_name)
                                 VALUES 
                                 ({}, {}, {}, '')'''.format(i + 1, 0, trip_id))
             mydb.commit()
@@ -108,7 +108,7 @@ def populate_seats(trip_id, covid_blocked_percentage):
 
 def reset_bookings(trip_id):
     mycursor.execute('''UPDATE seats
-                        SET status = 0, passenger_id=""
+                        SET status = 0, passenger_name="", passenger_id = 0
                         where trip_id = {}'''.format(trip_id))
     mydb.commit()
     mycursor.execute('''UPDATE trip
@@ -117,5 +117,10 @@ def reset_bookings(trip_id):
     mydb.commit()
 
 
-reset_bookings(1)
-populate_seats(1, covid_blocked_percentage)
+# for i in range(0,12):
+#    reset_bookings(i+1)
+#    populate_seats(i+1, covid_blocked_percentage)
+
+def delete_trips():
+    # can be an admin level function that deletes all trips for current date
+    pass
