@@ -323,9 +323,7 @@ def establish(arr):
 
     menu_listbox.place(x=47, y=580)
 
-    defaultText = '''No flights are available that match your parameters.
-                     The most common errors include spelling mistakes, not enough seats and no flights on that route.
-                     Please try changing your input parameters.'''
+
     count = 0
     for val in arr:
         val_1 = val.copy()
@@ -340,7 +338,8 @@ def establish(arr):
         count += 1
 
     if count == 0:
-        menu_listbox.insert(END, defaultText)
+        messagebox.showerror("ERROR : NO SUCH TRIP", "No flights are available that fit the desired parameters. "
+                                                     "Please consider checking again at a later date." )
 
 
 def no_errors(a, b, d):
@@ -471,3 +470,4 @@ def page1():
 # main
 page1()
 root.mainloop()
+s
