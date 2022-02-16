@@ -1,32 +1,23 @@
-Line 2: if any errors regarding scope come up try adding the following to line 2 -
-         # globals required
-         global menu_listbox
-         global seats_page_active
-         global booked_seats
+while defining button for status = blocked   : active fg and bg are not required because the button is disabled
 
-LINE 70(while defining button for status = blocked): active fg and bg are not required because the button is disabled
+right after defining get trip_id             : """will later have to add time as well since multiple trips in a day"""
 
-LINE 121(right after defining get trip_id): """will later have to add time as well since multiple trips in a day"""
-
-LINE 219(start of page1() function):  """If the next two aren't made global
-                                        the variable is a local variable which gets garbage collected
-                                        after the class is instantiated
-                                        so use global(if program only runs on functions )
-                                        or better use self.variable = tkinter.PhotoImage()
-                                        if program has classes"""
-
- LINE 266 (right before exit button) : """When i eventually have to sort for demonstration i have included a special set of flights to do just that.
-                                          They are not included with the remaining because :
-                                          currently route id determines the time and between two locations only 1 route exists. so quickest and earliest
-                                          flight lose all meaning(as does cheapest if we don't vary cost with day). This can later b eresolved when we add
-                                          multiple flights along different routes between the same two locations on the same day.
-
-                                          to demonstrate set dpt city = pointa and dst city to pointb"""
-
- LINE 272 (right after proceed button) :  """The lambda in the previous function(s) is to ensure the compiler doesnt execute the function on interpretation """
+start of page1() function                    : """If the next two aren't made global
+                                              the variable is a local variable which gets garbage collected after the class is instantiated
+                                              so use global(if program only runs on functions )
+                                              or better use self.variable = tkinter.PhotoImage()
+                                              if program has classes"""
+                                              
+right before exit button                     : """When i eventually have to sort for demonstration i have included a special set of flights to do just that.
+                                                They are not included with the remaining because :
+                                                currently route id determines the time and between two locations only 1 route exists. so quickest and earliest
+                                                flight lose all meaning(as does cheapest if we don't vary cost with day). This can later b eresolved when we add
+                                                multiple flights along different routes between the same two locations on the same day.
+                                                to demonstrate set dpt city = pointa and dst city to pointb"""
 
 
-LINE 95 AND LINE 120(passing argument into select_seat) : its the way lambda works. Writing like this lets me get seat_number for each seat at button press. Further understand what lambda does
+passing argument into select_seat             : its the way lambda works. Writing like this lets me get seat_number for each seat at button press. Further understand what lambda does
+
 
 NOTE : If a seat is blocked or booked ie state is disabled it cannot be clicked, As such i do not need
        assign text to said seat since nothing from that seat ever needs to be passed into select_seat
@@ -34,8 +25,8 @@ NOTE : If a seat is blocked or booked ie state is disabled it cannot be clicked,
 
  0 is available, 1 is blocked 2 is booked
  trip_det[0] is plane_id
-  trip_det[1] is dpt_city
-   trip_det[2] is arr_city
-    trip_det[3] is trip_date
-     trip_det[4] is dpt_time
-      trip_det[5] is arr_time
+ trip_det[1] is dpt_city
+ trip_det[2] is arr_city
+ trip_det[3] is trip_date
+ trip_det[4] is dpt_time
+ trip_det[5] is arr_time
