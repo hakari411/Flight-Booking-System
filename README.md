@@ -1,7 +1,2 @@
-2. CONFIRM THAT THE PASSENGER ISN'T "". PROMPT THEM TO FILL IF IT IS.
-3. at 50% blocked for covid, the last seat isnt blocked fix that
-4. remove brackets from the formatted listbox
-5. BIND TAB BUTTONS AND SUCH TO SWITCH BETWEEN ENTRY FIELDS
-6. UNIVERSALIZE FONT, FONT SIZE , SIZE OF BUTTONS, AND SO ON
-
+Used basic table structures in MySQL for the database and used python for the code. The front end is currently tkinter and the project is limited in scope but looking forward to expanding it into a fully fledged program!
 
