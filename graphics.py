@@ -24,8 +24,7 @@ active_buttons = 0
 
 # defining functions
 def new_trip():
-    # update the plane table when flight is full or when date is over
-    # by changing current location and then creating a new trip for the next day
+    # changing current location and then creating a new trip for the next day
     # which has the location and departure point reversed and date as next date
     pass
 
@@ -87,6 +86,8 @@ def confirm_booking(passenger_array, trip_id):
     global pass_id
     if active_buttons == int(size.get()):
         pass_id = random.randint(0, 99999999)
+    # when we eventually create a login system a user id will be defined for that particular yser at time of sign up
+        # so we can remove this
         i = 0
         for key in booked_seats:
             # print(i)
@@ -102,7 +103,7 @@ def confirm_booking(passenger_array, trip_id):
         mycursor.execute('''UPDATE trip
                             SET seats_left = seats_left - {}
                             where trip_id = {}'''
-                         .format(active_buttons, trip_id))
+                         .format(i, trip_id))
         mydb.commit()
 
         new_trip()
@@ -413,7 +414,7 @@ def page1():
     root.resizable(width=False, height=False)
     root.configure(bg="#dfe8e9")
 
-    banner = ImageTk.PhotoImage(Image.open(r"C:\Users\Dell\PythonProj\FlightSystem\images\Flyter_Banner.png"))
+    banner = ImageTk.PhotoImage(Image.open(r"C:\Users\Dell\Proj\FlightSystem\images\Flyter_Banner.png"))
     Label(image=banner).place(x=0, y=0)
 
     Label(text="Leaving From", bg="#dfe8e9", font=("Times New Roman", 13)).place(x=47, y=422)
@@ -452,7 +453,7 @@ def page1():
     # clicked.set("Sort By")
     # sort_menu.place(x=1040, y=540)
 
-    swap_photo = PhotoImage(file=r"C:\Users\Dell\PythonProj\FlightSystem\images\finalSwap.png")
+    swap_photo = PhotoImage(file=r"C:\Users\Dell\Proj\FlightSystem\images\finalSwap.png")
     swap_button = Button(root, image=swap_photo, height=25, width=30,
                          command=lambda: swap(location, destination))
     swap_button.place(x=245, y=452)
@@ -470,4 +471,3 @@ def page1():
 # main
 page1()
 root.mainloop()
-s
