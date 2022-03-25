@@ -3,13 +3,9 @@ import mysql.connector
 mydb = mysql.connector.connect(host="localhost", user="root", passwd="root", database="fbs")
 mycursor = mydb.cursor()
 
-
-# DO NOT CHANGE PLANE SIZE THE WHOLE CODE WILL BREAK
-# pre_book_percent = 32
-
 plane_size = 180
-covid_blocked_percentage = 45
-# works best for 45% + blocked
+covid_blocked_percentage = 60
+trip_id = 6
 
 
 def get_col_counts():
@@ -117,10 +113,13 @@ def reset_bookings(trip_id):
     mydb.commit()
 
 
-# for i in range(0,12):
-#    reset_bookings(i+1)
-#    populate_seats(i+1, covid_blocked_percentage)
-
 def delete_trips():
     # can be an admin level function that deletes all trips for current date
     pass
+
+# for i in range(0, 3):
+    # reset_bookings(i+1)
+# populate_seats(trip_id, covid_blocked_percentage)
+
+# another future admin level function could be to actually fly the plane
+# thus changing its current location and resetting its booking. It is relatively easy to code.
